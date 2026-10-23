@@ -1,0 +1,5 @@
+# 轻量版：纯 Python 依赖，Termux 上秒装、零编译
+# 功能与完整版完全一致，只少了 /docs 自动文档
+starlette>=0.37
+uvicorn>=0.27
+python-multipart>=0.0.9

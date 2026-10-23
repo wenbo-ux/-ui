@@ -1,0 +1,6 @@
+# 完整版（带 /docs 接口文档）
+# 注意：Termux 上新版 pydantic 需要 Rust 编译 pydantic-core，
+# 若 pip install 卡住/报错，改用 requirements-minimal.txt
+fastapi>=0.110
+uvicorn[standard]>=0.27
+python-multipart>=0.0.9
