@@ -11,8 +11,9 @@
 ## 目录
 
 - [特点](#特点)
-- [完整部署流程（Termux）](#完整部署流程termux)
-- [启动与停止](#启动与停止)
+- [完整部署流程（Termux / 安卓）](#完整部署流程termux--安卓)
+- [完整部署流程（电脑端）](#完整部署流程电脑端)
+- [启动与停止（Termux）](#启动与停止termux)
 - [日常维护](#日常维护)
 - [配置说明](#配置说明)
 - [绘图模块配置](#绘图模块配置)
@@ -34,7 +35,7 @@
 
 ---
 
-## 完整部署流程（Termux）
+## 完整部署流程（Termux / 安卓）
 
 ### 0. 前置说明
 
@@ -159,7 +160,331 @@ INFO:     Uvicorn running on http://0.0.0.0:8000
 
 ---
 
-## 启动与停止
+## 完整部署流程（电脑端）
+
+电脑上跑比手机舒服得多：**可以直接用完整版 FastAPI**（有现成的预编译 wheel，不会碰 Rust 编译），还白送 `/docs` 交互式接口文档。
+
+下面按系统分别写。**先看自己系统那一节，做完 1-4 步再回到第 5 步。**
+
+### 1. 装 Python
+
+需要 **Python 3.10 或更高**。
+
+**Windows**
+
+到 [python.org/downloads](https://www.python.org/downloads/) 下载安装包，安装时**务必勾选**：
+
+```
+☑ Add python.exe to PATH
+```
+
+这一步不勾，后面 `python` 命令会找不到。装完重开一个 PowerShell 验证：
+
+```powershell
+python --version
+```
+
+> 如果弹出 Microsoft Store 的 Python 页面，说明 PATH 没配好，去「设置 → 应用 → 应用执行别名」把 `python.exe` 和 `python3.exe` 两个开关关掉。
+
+**macOS**
+
+```bash
+brew install python
+```
+
+没装 Homebrew 的话先装：
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+**Linux（Debian/Ubuntu）**
+
+```bash
+sudo apt update
+sudo apt install -y python3 python3-venv python3-pip git
+```
+
+**Linux（Arch/Manjaro）**
+
+```bash
+sudo pacman -S --needed python git
+```
+
+> ⚠️ Debian/Ubuntu 上必须装 `python3-venv`，否则后面 `python3 -m venv` 会报 `ensurepip is not available`。
+
+验证：
+
+```bash
+python3 --version
+```
+
+### 2. 装 Git
+
+大部分 macOS / Linux 自带。Windows 到 [git-scm.com](https://git-scm.com/download/win) 下载，一路默认下一步即可。
+
+验证：
+
+```bash
+git --version
+```
+
+### 3. 克隆仓库
+
+```bash
+git clone https://github.com/wenbo-ux/-ui.git
+cd -- -ui
+```
+
+> 仓库名以 `-` 开头，`cd -- -ui` 里的 `--` 是告诉 shell "后面是参数不是选项"，不加会报错。
+>
+> **Windows PowerShell 里不需要 `--`**，直接 `cd -ui` 即可。
+
+嫌别扭可以克隆时改名，之后都是普通目录名：
+
+```bash
+git clone https://github.com/wenbo-ux/-ui.git webui
+cd webui
+```
+
+### 4. 创建虚拟环境
+
+**Windows（PowerShell）**
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+如果报这个错：
+
+```
+.venv\Scripts\Activate.ps1 : 无法加载文件，因为在此系统上禁止运行脚本
+```
+
+是 PowerShell 的执行策略限制，执行一次即可放开：
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+**macOS / Linux**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+激活成功后提示符前面会出现 `(.venv)`（Windows 是 `(.venv) PS C:\...>`）。
+
+### 5. 安装依赖
+
+```bash
+pip install --upgrade pip
+```
+
+```bash
+pip install -r requirements.txt
+```
+
+电脑上**用完整版**，会装上 `fastapi` + `uvicorn` + `python-multipart`，全部是预编译 wheel，通常半分钟到一分钟装完，不会编译任何东西。
+
+> 如果你在 ARM 架构的 Linux（树莓派等）上遇到编译问题，改用 `requirements-minimal.txt`，程序会自动降级到 Starlette，功能完整。
+
+### 6. 生成配置
+
+**macOS / Linux**
+
+```bash
+cp .env.example .env
+```
+
+**Windows（PowerShell）**
+
+```powershell
+Copy-Item .env.example .env
+```
+
+### 7. 启动
+
+```bash
+python run.py
+```
+
+看到这个就成功了（注意后端显示 `fastapi`，比手机上多一行接口文档地址）：
+
+```
+====================================================
+  Termux WebUI
+  后端     : fastapi
+  本机访问 : http://127.0.0.1:8000
+  局域网   : http://192.168.1.10:8000
+  接口文档 : http://192.168.1.10:8000/docs
+  数据目录 : data
+====================================================
+INFO:     Uvicorn running on http://0.0.0.0:8000
+```
+
+### 8. 访问
+
+- **本机浏览器**：`http://127.0.0.1:8000`
+- **接口文档**：`http://127.0.0.1:8000/docs`（可以直接在网页上试接口，很有用）
+- **手机 / 其他设备**：`http://<电脑局域网IP>:8000`
+  - 查本机 IP：
+    - Windows：`ipconfig`，看「IPv4 地址」
+    - macOS：`ipconfig getifaddr en0`
+    - Linux：`ip addr show | grep 'inet '`
+  - 用手机浏览器输这个地址前，先确认**电脑和手机连的同一个 Wi-Fi**
+
+### 9. 放行防火墙（Windows / macOS 通常需要）
+
+**Windows**：首次启动会弹出「Windows Defender 防火墙」窗口，勾选**专用网络**并允许。如果当时点了取消，手动加：
+
+```
+控制面板 → 系统和安全 → Windows Defender 防火墙 → 允许应用通过防火墙
+→ 更改设置 → 允许其他应用 → 浏览到 python.exe → 勾上「专用」
+```
+
+或者用命令（管理员 PowerShell）：
+
+```powershell
+New-NetFirewallRule -DisplayName "Termux WebUI 8000" -Direction Inbound -LocalPort 8000 -Protocol TCP -Action Allow
+```
+
+**macOS**：首次运行会弹「是否允许 python 接受传入网络连接」，选**允许**。
+错过了就去 `系统设置 → 网络 → 防火墙 → 选项` 里手动放行。
+
+**Linux（ufw）**：
+
+```bash
+sudo ufw allow 8000/tcp
+```
+
+> 不处理防火墙，本机 `127.0.0.1` 能打开，但手机连不上，这是最常见的原因。
+
+---
+
+## 电脑端：开机自启 / 后台常驻
+
+### Windows：任务计划程序
+
+1. 创建 `start-webui.bat`，放在项目目录里：
+
+```bat
+@echo off
+cd /d "%~dp0"
+call .venv\Scripts\activate.bat
+python run.py
+pause
+```
+
+2. `Win + R` 输入 `taskschd.msc` 打开任务计划程序
+3. 右侧「创建任务」
+   - 常规：勾选「不管用户是否登录都要运行」和「使用最高权限运行」
+   - 触发器：新建 → 「登录时」
+   - 操作：新建 → 程序选 `start-webui.bat`
+   - 设置：勾选「如果请求后任务还在运行，则不要启动新实例」
+
+### macOS：launchd
+
+创建 `~/Library/LaunchAgents/com.webui.plist`：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.webui</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/你的用户名/-ui/.venv/bin/python</string>
+    <string>/Users/你的用户名/-ui/run.py</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Users/你的用户名/-ui</string>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+</dict>
+</plist>
+```
+
+加载：
+
+```bash
+launchctl load ~/Library/LaunchAgents/com.webui.plist
+```
+
+### Linux：systemd（用户级）
+
+创建 `~/.config/systemd/user/webui.service`：
+
+```ini
+[Unit]
+Description=Termux WebUI
+After=network.target
+
+[Service]
+WorkingDirectory=%h/-ui
+ExecStart=%h/-ui/.venv/bin/python %h/-ui/run.py
+Restart=always
+
+[Install]
+WantedBy=default.target
+```
+
+启用：
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable --now webui
+systemctl --user status webui
+```
+
+要让它在**没登录时也运行**：
+
+```bash
+sudo loginctl enable-linger $USER
+```
+
+### 临时后台跑（三系统通用）
+
+**Windows**：
+
+```bat
+start /b pythonw run.py
+```
+
+**macOS / Linux**：
+
+```bash
+nohup python run.py > webui.log 2>&1 &
+```
+
+看日志：`tail -f webui.log`；停止：`pkill -f run.py`
+
+---
+
+## 电脑端与手机端配合
+
+这是这套东西最实用的用法：**后端跑在电脑上（算力富余、能一直开着），手机浏览器当访问端**。
+
+1. 电脑上启动服务（`HOST=0.0.0.0` 已是默认）
+2. 手机连**同一个 Wi-Fi**
+3. 手机浏览器打开 `http://电脑IP:8000`
+
+好处：
+
+- 生成的图片直接存在电脑硬盘上，手机不占空间
+- 手机不用一直开着 Termux，省电也不发热
+- 电脑上的 `.venv` 稳定，不会因为安卓杀进程而断
+
+⚠️ 如果电脑用 Wi-Fi 且 IP 会变，可以在路由器里给电脑做 **IP 绑定**（DHCP 静态分配），避免每次换地址。
+
+---
+
+## 启动与停止（Termux）
+
+> 电脑端的启动/自启见上方[电脑端：开机自启](#电脑端开机自启--后台常驻)一节。日常启停三系统通用：`python run.py` 启动，`Ctrl+C` 停止。
 
 ### 停止
 
@@ -511,6 +836,48 @@ tar -czf ~/webui-backup-$(date +%m%d).tar.gz data/
 
 恢复到新环境时，把 `data/` 放回项目根目录即可。
 
+### 电脑端：`python` 不是内部或外部命令（Windows）
+
+装 Python 时没勾 “Add python.exe to PATH”。两种解法：
+
+1. 重新运行安装包 → Modify → 勾上 PATH 项
+2. 或用 `py` 启动器代替 `python`：`py -m venv .venv`、`py run.py`
+
+### 电脑端：PowerShell 拒绝运行 Activate.ps1
+
+```
+无法加载文件 ...\Activate.ps1，因为在此系统上禁止运行脚本
+```
+
+执行一次（只需一次）：
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+不想改策略也可以在 CMD 里用 `activate.bat`：
+
+```bat
+.venv\Scripts\activate.bat
+```
+
+### 电脑端：手机连不上，但本机能打开
+
+按顺序排查：
+
+1. **防火墙**（最常见）：Windows 首次启动的放行弹窗点了取消，去手动加规则（见[电脑端第 9 步](#9-放行防火墙windows--macos-通常需要)）
+2. **不是同一个 Wi-Fi**：电脑连网线、手机连 Wi-Fi 时，要确认路由器没做网段隔离
+3. **用了 `127.0.0.1`**：手机上要输电脑的局域网 IP，不是 `127.0.0.1`
+4. **路由器 AP 隔离**：部分路由器默认开启，内网设备互相不可见，去路由器设置里关掉
+
+### 电脑端：`ensurepip is not available`（Debian/Ubuntu）
+
+缺 `python3-venv` 包：
+
+```bash
+sudo apt install -y python3-venv
+```
+
 ### 公网访问怎么办
 
 **不要**直接在路由器上把端口映射出去。用内网穿透：
@@ -526,19 +893,35 @@ cloudflared tunnel --url http://127.0.0.1:8000
 
 ## 其他部署方式
 
-### 普通 Linux / macOS / Windows
+> 详细分步流程见[电脑端部署](#完整部署流程电脑端)和 [Termux 部署](#完整部署流程termux--安卓)。这节只放速查命令。
+
+### 速查：Linux / macOS
 
 ```bash
-git clone https://github.com/wenbo-ux/-ui.git termux-webui
-cd termux-webui
-python -m venv .venv
-. .venv/bin/activate          # Windows: .venv\Scripts\activate
-pip install -r requirements.txt   # 这里可以直接用完整版，不会编译痛苦
+git clone https://github.com/wenbo-ux/-ui.git
+cd -- -ui
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 cp .env.example .env
 python run.py
 ```
 
+### 速查：Windows PowerShell
+
+```powershell
+git clone https://github.com/wenbo-ux/-ui.git
+cd -ui
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+Copy-Item .env.example .env
+python run.py
+```
+
 ### 直接跑 uvicorn
+
+不经过 `run.py`（不打印启动横幅，适合放到 systemd / 容器里）：
 
 ```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8000
@@ -550,7 +933,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 bash setup-termux.sh
 ```
 
-它会依次执行：`pkg update` → 装 python → 建 venv → 装依赖（完整版失败自动回退轻量版）→ 生成 `.env`。适合全新环境。
+它会依次执行：`pkg update` → 装 python → 建 venv → 装依赖（完整版失败自动回退轻量版）→ 生成 `.env`。适合全新 Termux 环境。
 
 ---
 
