@@ -39,14 +39,36 @@
 
   /* ---------------- tabs ---------------- */
   var tabs = document.querySelectorAll('.tab');
+  var tabPill = document.getElementById('tabPill');
+
+  function movePill(target, instant) {
+    if (!tabPill || !target) return;
+    var wrap = target.parentElement.getBoundingClientRect();
+    var r = target.getBoundingClientRect();
+    if (instant) tabPill.style.transition = 'none';
+    tabPill.style.width = r.width + 'px';
+    tabPill.style.transform = 'translateX(' + (r.left - wrap.left) + 'px)';
+    if (instant) {
+      void tabPill.offsetWidth;   // 强制重排，让宽度立即生效
+      tabPill.style.transition = '';
+    }
+  }
+
   Array.prototype.forEach.call(tabs, function (t) {
     t.addEventListener('click', function () {
       Array.prototype.forEach.call(tabs, function (x) { x.classList.remove('active'); });
       Array.prototype.forEach.call(document.querySelectorAll('.panel'), function (p) { p.classList.remove('active'); });
       t.classList.add('active');
       document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+      movePill(t);
     });
   });
+
+  function initPill() {
+    var active = document.querySelector('.tab.active');
+    if (active) movePill(active, true);
+  }
+  window.addEventListener('resize', initPill);
 
   /* ---------------- health ---------------- */
   function checkHealth() {
@@ -307,9 +329,8 @@
           img.addEventListener('click', function () { showLightbox(img.src); });
           card.appendChild(img);
         } else {
-          var errBox = el('div', 'meta');
-          errBox.textContent = '❌ ' + (im.error || '失败');
-          errBox.style.color = '#ff8f8f';
+          var errBox = el('div', 'err');
+          errBox.textContent = '⚠ ' + (im.error || '生成失败');
           card.appendChild(errBox);
         }
         var meta = el('div', 'meta', im.prompt.slice(0, 60) + (im.prompt.length > 60 ? '…' : ''));
@@ -363,6 +384,9 @@
   });
 
   /* ---------------- boot ---------------- */
+  initPill();
+  setTimeout(initPill, 120);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(initPill);
   checkHealth();
   loadNotes();
   loadUploads();

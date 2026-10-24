@@ -3,18 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0b0f14">
+<meta name="theme-color" content="#0a0620">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Termux WebUI</title>
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<header class="topbar">
+
+<!-- 背景光斑层 -->
+<div class="bg" aria-hidden="true">
+  <span class="blob b1"></span>
+  <span class="blob b2"></span>
+  <span class="blob b3"></span>
+  <span class="blob b4"></span>
+  <span class="grain"></span>
+</div>
+
+<header class="topbar glass">
   <div class="brand">
     <span class="dot" id="statusDot"></span>
     <strong>Termux WebUI</strong>
     <span class="backend" id="backendTag">…</span>
   </div>
   <nav class="tabs" id="tabs">
+    <span class="tab-pill" id="tabPill"></span>
     <button class="tab active" data-tab="notes">笔记</button>
     <button class="tab" data-tab="uploads">文件</button>
     <button class="tab" data-tab="image">绘图</button>
@@ -25,19 +38,22 @@
 <main>
   <!-- 笔记 -->
   <section class="panel active" id="panel-notes">
-    <div class="row">
-      <input id="noteTitle" class="input" placeholder="标题" autocomplete="off">
-      <button class="btn primary" id="addNote">新建</button>
+    <div class="glass card-pad">
+      <div class="row">
+        <input id="noteTitle" class="input" placeholder="标题" autocomplete="off">
+        <button class="btn primary" id="addNote">新建</button>
+      </div>
+      <textarea id="noteBody" class="textarea" rows="3" placeholder="内容（可选）"></textarea>
     </div>
-    <textarea id="noteBody" class="textarea" rows="4" placeholder="内容（可选）"></textarea>
     <p class="hint" id="notesHint"></p>
     <ul class="list" id="notesList"></ul>
   </section>
 
   <!-- 文件 -->
   <section class="panel" id="panel-uploads">
-    <label class="dropzone" id="dropzone">
+    <label class="dropzone glass" id="dropzone">
       <input type="file" id="fileInput" multiple hidden>
+      <span class="dz-icon">⇪</span>
       <span>点击选择文件，或拖拽到这里</span>
       <small>上限 <span id="maxMb">50</span> MB / 个</small>
     </label>
@@ -47,8 +63,8 @@
 
   <!-- 绘图 -->
   <section class="panel" id="panel-image">
-    <details class="cfg" id="cfgBox">
-      <summary>⚙️ API 配置（点开填写，存本地）</summary>
+    <details class="cfg glass" id="cfgBox">
+      <summary>⚙️ API 配置<span class="sum-tip">点开填写，存本地</span></summary>
       <div class="cfg-body">
         <label class="lbl">类型
           <select id="pvKind" class="input"></select>
@@ -72,19 +88,21 @@
       </div>
     </details>
 
-    <div class="row" style="margin-top:10px">
-      <select id="imgProvider" class="input"></select>
-    </div>
-    <textarea id="imgPrompt" class="textarea" rows="3" placeholder="描述你想要的画面，越具体越好…"></textarea>
-    <div class="row">
-      <select id="imgSize" class="input">
-        <option value="1024x1024">1024×1024 方</option>
-        <option value="1024x1536">1024×1536 竖</option>
-        <option value="1536x1024">1536×1024 横</option>
-        <option value="768x768">768×768</option>
-        <option value="512x512">512×512</option>
-      </select>
-      <button class="btn primary" id="imgGo">生成</button>
+    <div class="glass card-pad">
+      <div class="row">
+        <select id="imgProvider" class="input"></select>
+      </div>
+      <textarea id="imgPrompt" class="textarea" rows="3" placeholder="描述你想要的画面，越具体越好…"></textarea>
+      <div class="row">
+        <select id="imgSize" class="input">
+          <option value="1024x1024">1024×1024 方</option>
+          <option value="1024x1536">1024×1536 竖</option>
+          <option value="1536x1024">1536×1024 横</option>
+          <option value="768x768">768×768</option>
+          <option value="512x512">512×512</option>
+        </select>
+        <button class="btn primary" id="imgGo">生成</button>
+      </div>
     </div>
     <p class="hint" id="imgHint">先在上面填好 API 配置</p>
     <div class="gallery" id="imgGallery"></div>
@@ -93,7 +111,7 @@
   <!-- 系统 -->
   <section class="panel" id="panel-system">
     <button class="btn" id="refreshSys">刷新</button>
-    <pre class="code" id="sysOut">加载中…</pre>
+    <pre class="code glass" id="sysOut">加载中…</pre>
   </section>
 </main>
 
