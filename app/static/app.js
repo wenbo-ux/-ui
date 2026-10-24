@@ -207,10 +207,168 @@
   }
   document.getElementById('refreshSys').addEventListener('click', loadSys);
 
+  /* ---------------- image generation ---------------- */
+  var pvList = document.getElementById('pvList');
+  var imgProvider = document.getElementById('imgProvider');
+  var imgHint = document.getElementById('imgHint');
+  var gallery = document.getElementById('imgGallery');
+
+  function loadKinds() {
+    api('/api/providers/kinds').then(function (j) {
+      var sel = document.getElementById('pvKind');
+      sel.innerHTML = '';
+      j.data.forEach(function (k) {
+        var o = el('option');
+        o.value = k.kind;
+        o.textContent = k.desc;
+        sel.appendChild(o);
+      });
+    }).catch(function () {});
+  }
+
+  function loadProviders() {
+    api('/api/providers').then(function (j) {
+      var list = j.data || [];
+      pvList.innerHTML = '';
+      imgProvider.innerHTML = '';
+
+      if (!list.length) {
+        pvList.appendChild(el('li', 'hint', '还没有配置，填好上面的表单保存'));
+        var none = el('option');
+        none.value = '';
+        none.textContent = '（未配置 provider）';
+        imgProvider.appendChild(none);
+        return;
+      }
+
+      list.forEach(function (p) {
+        var li = el('li', 'item');
+        var head = el('div', 'item-head');
+        head.appendChild(el('div', 'item-title', p.name));
+        var acts = el('div', 'actions');
+        var del = el('button', 'btn mini danger', '删除');
+        del.addEventListener('click', function () {
+          if (!confirm('删除配置「' + p.name + '」？')) return;
+          api('/api/providers/' + p.id, { method: 'DELETE' })
+            .then(loadProviders).catch(function (e) { alert(e.message); });
+        });
+        acts.appendChild(del);
+        head.appendChild(acts);
+        li.appendChild(head);
+        li.appendChild(el('div', 'item-meta', p.kind + ' · ' + (p.model || '默认模型') + ' · ' + p.api_key));
+        pvList.appendChild(li);
+
+        var o = el('option');
+        o.value = p.id;
+        o.textContent = p.name + ' (' + (p.model || p.kind) + ')';
+        imgProvider.appendChild(o);
+      });
+
+      var cur = localStorage.getItem('lastProvider');
+      if (cur) imgProvider.value = cur;
+      imgHint.textContent = '就绪，输入描述后点生成';
+    }).catch(function (e) { imgHint.textContent = '加载配置失败：' + e.message; });
+  }
+
+  document.getElementById('pvSave').addEventListener('click', function () {
+    var body = {
+      kind: document.getElementById('pvKind').value,
+      name: document.getElementById('pvName').value.trim(),
+      base_url: document.getElementById('pvBase').value.trim(),
+      api_key: document.getElementById('pvKey').value.trim(),
+      model: document.getElementById('pvModel').value.trim()
+    };
+    if (!body.api_key) { alert('API Key 必填'); return; }
+    api('/api/providers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function () {
+      document.getElementById('pvKey').value = '';
+      document.getElementById('pvName').value = '';
+      loadProviders();
+    }).catch(function (e) { alert('保存失败：' + e.message); });
+  });
+
+  imgProvider.addEventListener('change', function () {
+    localStorage.setItem('lastProvider', imgProvider.value);
+  });
+
+  function loadImages() {
+    api('/api/images').then(function (j) {
+      var list = j.data || [];
+      gallery.innerHTML = '';
+      list.forEach(function (im) {
+        var card = el('div', 'card');
+        if (im.filename) {
+          var img = el('img');
+          img.src = '/api/images/file/' + encodeURIComponent(im.filename) + (TOKEN ? '?token=' + encodeURIComponent(TOKEN) : '');
+          img.loading = 'lazy';
+          img.addEventListener('click', function () { showLightbox(img.src); });
+          card.appendChild(img);
+        } else {
+          var errBox = el('div', 'meta');
+          errBox.textContent = '❌ ' + (im.error || '失败');
+          errBox.style.color = '#ff8f8f';
+          card.appendChild(errBox);
+        }
+        var meta = el('div', 'meta', im.prompt.slice(0, 60) + (im.prompt.length > 60 ? '…' : ''));
+        card.appendChild(meta);
+        var del = el('button', 'del', '×');
+        del.addEventListener('click', function () {
+          if (!confirm('删除这张图？')) return;
+          api('/api/images/' + im.id, { method: 'DELETE' })
+            .then(loadImages).catch(function (e) { alert(e.message); });
+        });
+        card.appendChild(del);
+        gallery.appendChild(card);
+      });
+    }).catch(function () {});
+  }
+
+  function showLightbox(src) {
+    var lb = document.getElementById('lightbox');
+    document.getElementById('lightboxImg').src = src;
+    lb.classList.add('show');
+  }
+  document.getElementById('lightbox').addEventListener('click', function () {
+    this.classList.remove('show');
+  });
+
+  document.getElementById('imgGo').addEventListener('click', function () {
+    var prompt = document.getElementById('imgPrompt').value.trim();
+    var pid = imgProvider.value;
+    if (!pid) { alert('请先在「API 配置」里添加一个 provider'); return; }
+    if (!prompt) { document.getElementById('imgPrompt').focus(); return; }
+
+    var btn = this;
+    btn.disabled = true;
+    imgHint.innerHTML = '<span class="spin"></span>生成中…可能需要几十秒';
+    api('/api/images', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        provider_id: Number(pid),
+        prompt: prompt,
+        size: document.getElementById('imgSize').value,
+        n: 1
+      })
+    }).then(function () {
+      imgHint.textContent = '生成完成';
+      loadImages();
+    }).catch(function (e) {
+      imgHint.textContent = '失败：' + e.message;
+      loadImages();
+    }).then(function () { btn.disabled = false; });
+  });
+
   /* ---------------- boot ---------------- */
   checkHealth();
   loadNotes();
   loadUploads();
   loadSys();
+  loadKinds();
+  loadProviders();
+  loadImages();
   setInterval(checkHealth, 30000);
 })();

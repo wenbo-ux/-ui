@@ -63,8 +63,38 @@ termux-webui/
 | POST | `/api/uploads` | 上传（multipart，字段名 `files`，支持多个） |
 | GET | `/api/uploads/{name}/download` | 下载 |
 | DELETE | `/api/uploads/{name}` | 删除 |
+| GET | `/api/providers/kinds` | 支持的 provider 类型 |
+| GET/POST | `/api/providers` | 列出/新增图片 API 配置 |
+| PUT/DELETE | `/api/providers/{id}` | 修改/删除配置 |
+| GET/POST | `/api/images` | 图片记录列表 / 生成图片 |
+| GET | `/api/images/file/{name}` | 查看图片 |
+| DELETE | `/api/images/{id}` | 删除图片 |
 
 响应统一格式：成功 `{"ok": true, "data": ...}`，失败 `{"ok": false, "error": "..."}`。
+
+## 绘图（接入任意图片生成 API）
+
+页面里「绘图」标签 → 点开「API 配置」→ 填类型 / Base URL / API Key / 模型名 → 保存。
+配置存在本地 SQLite 里，key 在列表和接口返回中始终是掩码（`****abcd`）。
+
+支持四种接口格式：
+
+| 类型 | 适用 |
+|---|---|
+| `openai_images` | OpenAI `/v1/images/generations`、硅基流动、大多数中转站 |
+| `openai_chat` | OpenAI 兼容 chat 接口出图（Gemini 中转、多模态模型） |
+| `gemini` | Google Gemini 原生 `generateContent` |
+| `dashscope` | 阿里百炼万相（异步任务 + 自动轮询） |
+
+Base URL 填写示例：
+
+- OpenAI：`https://api.openai.com/v1`
+- 硅基流动：`https://api.siliconflow.cn/v1`
+- 智谱：`https://open.bigmodel.cn/api/paas/v4`（图片走 `openai_images`，模型名 `cogview-4`）
+- 阿里万相：`https://dashscope.aliyuncs.com/api/v1`（选 `dashscope`，模型 `wanx2.1-t2i-turbo`）
+- Gemini：`https://generativelanguage.googleapis.com/v1beta`（选 `gemini`）
+
+失败原因会作为记录留在画廊里（显示红色错误），不会静默丢掉。
 
 ## 配置（.env）
 

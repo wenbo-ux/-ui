@@ -67,3 +67,24 @@ main{padding:14px;max-width:760px;margin:0 auto}
   font-family:ui-monospace,Menlo,monospace;margin:10px 0 0;
 }
 .foot{text-align:center;color:var(--dim);font-size:11.5px;padding:18px 0 26px}
+/* 配置折叠区 */
+.cfg{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:12px}
+.cfg>summary{padding:12px;cursor:pointer;color:var(--dim);font-size:14px;list-style:none}
+.cfg>summary::-webkit-details-marker{display:none}
+.cfg[open]>summary{border-bottom:1px solid var(--line);color:var(--fg)}
+.cfg-body{padding:12px}
+.lbl{display:block;font-size:12.5px;color:var(--dim);margin-bottom:10px}
+.lbl .input{margin-top:5px}
+select.input{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--dim) 50%),linear-gradient(135deg,var(--dim) 50%,transparent 50%);background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:34px}
+/* 图片画廊 */
+.gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative}
+.card img{width:100%;display:block;aspect-ratio:1;object-fit:cover;cursor:zoom-in}
+.card .meta{padding:8px;font-size:11.5px;color:var(--dim);line-height:1.4;word-break:break-word}
+.card .del{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.6);border:0;color:#fff;font-size:15px;line-height:1;cursor:pointer}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--dim);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* 大图查看 */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
+.lightbox.show{display:flex}
+.lightbox img{max-width:100%;max-height:100%;object-fit:contain}

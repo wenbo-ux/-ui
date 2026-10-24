@@ -17,6 +17,7 @@
   <nav class="tabs" id="tabs">
     <button class="tab active" data-tab="notes">笔记</button>
     <button class="tab" data-tab="uploads">文件</button>
+    <button class="tab" data-tab="image">绘图</button>
     <button class="tab" data-tab="system">系统</button>
   </nav>
 </header>
@@ -44,6 +45,51 @@
     <ul class="list" id="uploadsList"></ul>
   </section>
 
+  <!-- 绘图 -->
+  <section class="panel" id="panel-image">
+    <details class="cfg" id="cfgBox">
+      <summary>⚙️ API 配置（点开填写，存本地）</summary>
+      <div class="cfg-body">
+        <label class="lbl">类型
+          <select id="pvKind" class="input"></select>
+        </label>
+        <label class="lbl">名称（自己认得的标签）
+          <input id="pvName" class="input" placeholder="如 智谱 / 我的中转站">
+        </label>
+        <label class="lbl">Base URL
+          <input id="pvBase" class="input" placeholder="https://api.openai.com/v1">
+        </label>
+        <label class="lbl">API Key
+          <input id="pvKey" class="input" type="password" placeholder="sk-...">
+        </label>
+        <label class="lbl">模型名
+          <input id="pvModel" class="input" placeholder="gpt-image-1 / cogview-4 / wanx2.1-t2i-turbo">
+        </label>
+        <div class="row">
+          <button class="btn primary" id="pvSave">保存配置</button>
+        </div>
+        <ul class="list" id="pvList"></ul>
+      </div>
+    </details>
+
+    <div class="row" style="margin-top:10px">
+      <select id="imgProvider" class="input"></select>
+    </div>
+    <textarea id="imgPrompt" class="textarea" rows="3" placeholder="描述你想要的画面，越具体越好…"></textarea>
+    <div class="row">
+      <select id="imgSize" class="input">
+        <option value="1024x1024">1024×1024 方</option>
+        <option value="1024x1536">1024×1536 竖</option>
+        <option value="1536x1024">1536×1024 横</option>
+        <option value="768x768">768×768</option>
+        <option value="512x512">512×512</option>
+      </select>
+      <button class="btn primary" id="imgGo">生成</button>
+    </div>
+    <p class="hint" id="imgHint">先在上面填好 API 配置</p>
+    <div class="gallery" id="imgGallery"></div>
+  </section>
+
   <!-- 系统 -->
   <section class="panel" id="panel-system">
     <button class="btn" id="refreshSys">刷新</button>
@@ -52,6 +98,7 @@
 </main>
 
 <footer class="foot">FastAPI/Starlette · SQLite · 无外部前端依赖</footer>
+<div class="lightbox" id="lightbox"><img id="lightboxImg" alt=""></div>
 <script src="/static/app.js"></script>
 </body>
 </html>

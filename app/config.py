@@ -34,6 +34,7 @@ class Settings:
         self.reload: bool = _flag("RELOAD")
         self.data_dir: Path = Path(os.getenv("DATA_DIR", str(BASE_DIR / "data")))
         self.upload_dir: Path = self.data_dir / "uploads"
+        self.image_dir: Path = self.data_dir / "images"
         self.db_path: Path = self.data_dir / "app.db"
         self.max_upload_mb: int = int(os.getenv("MAX_UPLOAD_MB", "50"))
         # 留空 = 不校验；填了就在 /api 下要求 token（?token= 或 X-Token 头）
@@ -47,6 +48,7 @@ class Settings:
 
     def ensure_dirs(self) -> None:
         self.upload_dir.mkdir(parents=True, exist_ok=True)
+        self.image_dir.mkdir(parents=True, exist_ok=True)
 
 
 settings = Settings()
